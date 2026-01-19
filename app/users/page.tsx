@@ -63,7 +63,6 @@ export default function Users() {
   };
 
   if (loading) return <p>Loading...</p>;
-
   return (
     <div>
       <h1>GraphQL CRUD</h1>
