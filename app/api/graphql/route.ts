@@ -76,4 +76,12 @@ const server = new ApolloServer({
 
 const handler = startServerAndCreateNextHandler(server);
 
-export { handler as GET, handler as POST };
+export function GET(req: Request) {
+  return handler(req);
+}
+
+export function POST(req: Request) {
+  return handler(req);
+}
+
+// export { handler as GET, handler as POST };
