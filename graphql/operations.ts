@@ -38,8 +38,6 @@ export const DELETE_USER = gql`
 `;
 
 
-
-
 export const GET_FILES = gql`
   query {
     files {

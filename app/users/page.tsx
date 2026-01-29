@@ -10,6 +10,8 @@ import {
   UPDATE_USER,
   DELETE_USER,
 } from "@/graphql/operations";
+import MKTable from "@/components/MkTable";
+import { dateTimePipe } from "@/lib/shared";
 
 type User = {
   id: string;
@@ -62,6 +64,34 @@ export default function Users() {
     setEmail(u.email);
   };
 
+  const columns=[
+    {
+      name:'Name',
+      key:'name',
+      render:(item:any)=>item.name
+    },
+    {
+      name:'Email',
+      key:'email',
+      render:(item:any)=>item.email
+    },
+     {
+      name:'Created At',
+      key:'createdAt',
+      render:(item:any)=>dateTimePipe(Number(item.createdAt))
+    },
+    {
+      name:'Actions',
+      key:'actions',
+      render:(item:any)=><>
+        <button onClick={()=>handleEdit(item)} className="mr-2 text-blue-500 cursor-pointer">Edit</button>
+        <button onClick={async()=>{
+          await deleteUser({variables:{id:item.id}})
+        }} className="text-red-500 cursor-pointer">Delete</button>
+      </>
+    }
+  ]
+
   if (loading) return <p>Loading...</p>;
   return (
     <div>
@@ -79,27 +109,19 @@ export default function Users() {
         onChange={(e) => setEmail(e.target.value)}
       />
 
-      <button onClick={handleSubmit}>
+      <button onClick={handleSubmit} className="">
         {editId ? "Update" : "Create"}
       </button>
 
       <hr />
 
-      {data?.users.map((u: any) => (
-        <div key={u.id}>
-          {u.name} - {u.email}
-
-          <button onClick={() => handleEdit(u)}>Edit</button>
-
-          <button
-            onClick={() =>
-              deleteUser({ variables: { id: u.id } })
-            }
-          >
-            Delete
-          </button>
-        </div>
-      ))}
+      <MKTable
+      columns={columns}
+      data={data?.users||[]}
+      total={data?.users?.length||0}
+      isLoading={loading}
+      count={data?.users?.length||0}
+      />
     </div>
   );
 }

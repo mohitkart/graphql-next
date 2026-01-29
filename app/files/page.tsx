@@ -11,22 +11,22 @@ import {
   DELETE_FILE,
 } from "@/graphql/operations";
 
-type User = {
+type FileType = {
   id: string;
   name: string;
   ext: string;
 };
 
-type UsersResponse = {
-  files: User[];
+type FilesResponse = {
+  files: FileType[];
 };
 
-export default function Users() {
+export default function Files() {
   const [name, setName] = useState("");
   const [ext, setExt] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
 
-  const { data, loading } = useQuery<UsersResponse>(GET_FILES);
+  const { data, loading } = useQuery<FilesResponse>(GET_FILES);
 
   const [createUser] = useMutation(CREATE_FILE, {
     refetchQueries: [GET_FILES],

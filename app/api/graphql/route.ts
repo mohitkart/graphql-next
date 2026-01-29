@@ -57,7 +57,7 @@ const resolvers = {
   Query: {
     users: async () => {
       await connectDB();
-      return User.find();
+      return User.find().sort({ createdAt: -1 });
     },
     user: async (_: any, { id }: any) => {
       await connectDB();
