@@ -113,14 +113,14 @@ export default function Users() {
         {editId ? "Update" : "Create"}
       </button>
 
-      <hr />
+      <hr className="my-4" />
 
       <MKTable
       columns={columns}
       data={data?.users||[]}
       total={data?.users?.length||0}
       isLoading={loading}
-      count={data?.users?.length||0}
+      count={5}
       />
     </div>
   );

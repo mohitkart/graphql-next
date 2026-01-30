@@ -24,7 +24,7 @@ const typeDefs = `#graphql
   }
 
   type Query {
-    users: [User]
+    users(search: String): [User]
     user(id: ID!): User
     files: [File]
     file(id: ID!): File
@@ -40,24 +40,32 @@ const typeDefs = `#graphql
   }`;
 
 
-  let files=[
-    {
-      name:'file1',
-      ext:'.png',
-      id:'1'
-    },
-    {
-      name:'file2',
-      ext:'.js',
-      id:'2'
-    }
-  ]
+let files = [
+  {
+    name: 'file1',
+    ext: '.png',
+    id: '1'
+  },
+  {
+    name: 'file2',
+    ext: '.js',
+    id: '2'
+  }
+]
 
 const resolvers = {
   Query: {
-    users: async () => {
+    users: async (_: any, { search }: any) => {
       await connectDB();
-      return User.find().sort({ createdAt: -1 });
+      if (!search) {
+        return User.find().sort({ createdAt: -1 });
+      }
+      return User.find({
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+        ],
+      });
     },
     user: async (_: any, { id }: any) => {
       await connectDB();
@@ -96,30 +104,30 @@ const resolvers = {
     },
 
     createFile: async (_: any, { name, ext }: any) => {
-      const payload={
+      const payload = {
         name,
         ext,
-        id:getRandomCode(6),
-        createdAt:new Date().toISOString()
+        id: getRandomCode(6),
+        createdAt: new Date().toISOString()
       }
       files.push(payload);
       return payload;
     },
     updateFile: async (_: any, { id, name, ext }: any) => {
-      const payload={
+      const payload = {
         name,
         ext,
-        updatedAt:new Date().toISOString()
+        updatedAt: new Date().toISOString()
       }
-      const index=files.findIndex(itm=>itm.id==id)
-      files[index]={
+      const index = files.findIndex(itm => itm.id == id)
+      files[index] = {
         ...files[index],
         ...payload
       }
       return files[index]
     },
     deleteFile: async (_: any, { id }: any) => {
-      files=files.filter(itm=>itm.id!=id)
+      files = files.filter(itm => itm.id != id)
       return true;
     },
   },
