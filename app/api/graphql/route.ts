@@ -37,7 +37,8 @@ const typeDefs = `#graphql
     createFile(name: String!, ext: String!): File
     updateFile(id: ID!, name: String, ext: String): File
     deleteFile(id: ID!): Boolean
-  }`;
+  }
+  `;
 
 
 let files = [
@@ -65,7 +66,7 @@ const resolvers = {
           { name: { $regex: search, $options: "i" } },
           { email: { $regex: search, $options: "i" } },
         ],
-      });
+      }).sort({ createdAt: -1 });
     },
     user: async (_: any, { id }: any) => {
       await connectDB();
@@ -91,11 +92,12 @@ const resolvers = {
     },
     updateUser: async (_: any, { id, name, email }: any) => {
       await connectDB();
-      return User.findByIdAndUpdate(
+      const updatedUser = await User.findByIdAndUpdate(
         id,
         { name, email },
         { new: true }
       );
+      return updatedUser;
     },
     deleteUser: async (_: any, { id }: any) => {
       await connectDB();

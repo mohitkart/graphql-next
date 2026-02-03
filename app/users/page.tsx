@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@apollo/client/react";
 
 import {
@@ -12,6 +12,8 @@ import {
 } from "@/graphql/operations";
 import MKTable from "@/components/MkTable";
 import { dateTimePipe } from "@/lib/shared";
+import Modal from "@/components/Modal";
+import { useDebounce } from "@/hooks/debounce";
 
 type User = {
   id: string;
@@ -24,11 +26,18 @@ type UsersResponse = {
 };
 
 export default function Users() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
+  const [formModal, setFormModal] = useState<any>();
+  const [filters ,setFilter] = useState<{search:string,page:number,count:number}>({search:'jai',page:1,count:10});
+  const debouncedText = useDebounce(filters.search, 500);
 
-  const { data, loading } = useQuery<UsersResponse>(GET_USERS);
+  const { data, loading ,refetch} = useQuery<UsersResponse>(GET_USERS, {
+    variables: {
+      search: debouncedText,
+      page: filters.page,
+      count: filters.count
+    }
+  });
 
   const [createUser] = useMutation(CREATE_USER, {
     refetchQueries: [GET_USERS],
@@ -45,57 +54,145 @@ export default function Users() {
   const handleSubmit = async () => {
     if (editId) {
       await updateUser({
-        variables: { id: editId, name, email },
+        variables: { id: editId, name:formModal.name, email:formModal.email },
       });
       setEditId(null);
     } else {
       await createUser({
-        variables: { name, email },
+        variables: { name:formModal.name,email:formModal.email },
       });
     }
-
-    setName("");
-    setEmail("");
+    setFormModal("");
   };
 
   const handleEdit = (u: any) => {
     setEditId(u.id);
-    setName(u.name);
-    setEmail(u.email);
+    setFormModal({
+      name: u.name,
+      email: u.email
+    });
   };
 
-  const columns=[
+  const columns = [
     {
-      name:'Name',
-      key:'name',
-      render:(item:any)=>item.name
+      name: 'Name',
+      key: 'name',
+      render: (item: any) => item.name
     },
     {
-      name:'Email',
-      key:'email',
-      render:(item:any)=>item.email
-    },
-     {
-      name:'Created At',
-      key:'createdAt',
-      render:(item:any)=>dateTimePipe(Number(item.createdAt))
+      name: 'Email',
+      key: 'email',
+      render: (item: any) => item.email
     },
     {
-      name:'Actions',
-      key:'actions',
-      render:(item:any)=><>
-        <button onClick={()=>handleEdit(item)} className="mr-2 text-blue-500 cursor-pointer">Edit</button>
-        <button onClick={async()=>{
-          await deleteUser({variables:{id:item.id}})
+      name: 'Created At',
+      key: 'createdAt',
+      render: (item: any) => dateTimePipe(Number(item.createdAt))
+    },
+    {
+      name: 'Actions',
+      key: 'actions',
+      render: (item: any) => <>
+        <button onClick={() => handleEdit(item)} className="mr-2 text-blue-500 cursor-pointer">Edit</button>
+        <button onClick={async () => {
+          await deleteUser({ variables: { id: item.id } })
         }} className="text-red-500 cursor-pointer">Delete</button>
       </>
     }
   ]
 
-  if (loading) return <p>Loading...</p>;
+  const addUser = () => {
+    setEditId('')
+    setFormModal({
+      name: '',
+      email: ''
+    });
+  }
+
+  useEffect(() => {
+      refetch({ search: debouncedText.trim()});
+    }, [debouncedText.trim()]);
+
   return (
     <div>
-      <h1>GraphQL CRUD</h1>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">User Management</h1>
+          <p className="text-gray-600 mt-2">Manage your user records with search, filter, and action options</p>
+        </div>
+        <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+            <div className="relative flex-1 max-w-xl">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i className="fas fa-search text-gray-400"></i>
+              </div>
+              <input
+                type="text"
+                value={filters.search}
+                onChange={e=>setFilter((prev:any)=>({...prev,search:e.target.value}))}
+                id="searchInput"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                placeholder="Search by name, email, or role..."
+
+              />
+            </div>
+
+
+            <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative">
+                  <select id="statusFilter" className="appearance-none w-full sm:w-48 pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent bg-white">
+                    <option value="">All Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Pending">Pending</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <i className="fas fa-chevron-down text-gray-400"></i>
+                  </div>
+                </div>
+              </div>
+
+              <button id="addButton"
+                onClick={() => addUser()}
+                className="bg-blue-500 hover:bg-secondary cursor-pointer text-white font-semibold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center gap-2 whitespace-nowrap">
+                <i className="fas fa-plus"></i>
+                Add New User
+              </button>
+            </div>
+
+
+          </div>
+
+          <div id="activeFilters" className="mt-4 flex flex-wrap gap-2 hidden">
+            <span className="text-sm text-gray-600 mr-2">Active filters:</span>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+          <MKTable
+            columns={columns}
+            data={data?.users || []}
+            total={data?.users?.length || 0}
+            isLoading={loading}
+            count={5}
+          />
+        </div>
+
+        <div id="emptyState" className="text-center py-12 hidden">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+            <i className="fas fa-users text-gray-400 text-2xl"></i>
+          </div>
+          <h3 className="text-lg font-medium text-gray-800 mb-2">No users found</h3>
+          <p className="text-gray-600 max-w-md mx-auto">Try adjusting your search or filter to find what {`you're`} looking for.</p>
+          <button id="resetFilters" className="mt-4 text-blue-500 hover:text-secondary font-medium">
+            Reset all filters
+          </button>
+        </div>
+      </div>
+
+      {/* <h1>GraphQL CRUD</h1>
 
       <input
         placeholder="name"
@@ -121,7 +218,36 @@ export default function Users() {
       total={data?.users?.length||0}
       isLoading={loading}
       count={5}
-      />
+      /> */}
+      {formModal ? <Modal
+        onResult={e => setFormModal('')}
+        title={editId ? 'Edit User' : 'Add New User'}
+        body={<form
+         onSubmit={e=>{e.preventDefault(); handleSubmit()}}
+        className="p-6 space-y-4">
+          <div>
+            <label htmlFor="userName" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <input type="text" id="userName"
+              value={formModal.name}
+              onChange={e => setFormModal((prev: any) => ({ ...prev, name: e.target.value }))}
+              required className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent" />
+          </div>
+          <div>
+            <label htmlFor="userEmail" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+            <input type="email" id="userEmail"
+              value={formModal.email}
+              onChange={e => setFormModal((prev: any) => ({ ...prev, email: e.target.value }))}
+              required className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent" />
+          </div>
+          <div className="flex justify-end space-x-3">
+            <button type="button" className="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              onClick={() => setFormModal('')}
+            >Cancel</button>
+            <button className="px-5 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            >Save</button>
+          </div>
+        </form>}
+      /> : null}
     </div>
   );
 }

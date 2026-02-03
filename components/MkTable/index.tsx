@@ -1,3 +1,5 @@
+import InfiniteScroll from "../InfiniteScroll";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface MkTableColumn {
     key: string;
@@ -14,12 +16,12 @@ export interface MkTableProps {
 }
 export default function MKTable({ columns, data, total = 0, count = 50, isLoading = false }: MkTableProps) {
     if (isLoading) return <>
-        <div className="shine h-[50px] mb-1"></div>
-        <div className="shine h-[50px] mb-1"></div>
-        <div className="shine h-[50px] mb-1"></div>
-        <div className="shine h-[50px] mb-1"></div>
-        <div className="shine h-[50px] mb-1"></div>
-        <div className="shine h-[50px] mb-1"></div>
+        <div className="animate-pulse bg-gray-300 h-[50px] mb-1"></div>
+        <div className="animate-pulse bg-gray-300 h-[50px] mb-1"></div>
+        <div className="animate-pulse bg-gray-300 h-[50px] mb-1"></div>
+        <div className="animate-pulse bg-gray-300 h-[50px] mb-1"></div>
+        <div className="animate-pulse bg-gray-300 h-[50px] mb-1"></div>
+        <div className="animate-pulse bg-gray-300 h-[50px] mb-1"></div>
     </>
 
     if(!total) return <>
@@ -49,6 +51,7 @@ export default function MKTable({ columns, data, total = 0, count = 50, isLoadin
                     })}
                 </tbody>
             </table>
+            <InfiniteScroll load={()=>{}}>Loading</InfiniteScroll>
         </div>
 
 

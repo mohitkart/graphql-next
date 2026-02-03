@@ -1,14 +1,15 @@
 import { gql } from "@apollo/client/core";
 
 export const GET_USERS = gql`
-  query {
-    users {
-      id
-      name
-      email,
-      createdAt
-    }
+  query User($search: String) {
+  users(search: $search) {
+    createdAt
+    email
+    id
+    name
+    updatedAt
   }
+}
 `;
 
 export const CREATE_USER = gql`
