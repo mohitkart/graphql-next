@@ -31,13 +31,13 @@ export default function Users() {
   const [formModal, setFormModal] = useState<any>();
   const [data, setData] = useState<any[]>([]);
   const [formLoading, setFormLoading] = useState<any>(false);
-  const [filters, setFilter] = useState<{ search: string, page: number, count: number, loadMore: any,loadMorePage:number }>({ search: '', page: 1, count: 5, loadMore: true,loadMorePage:1 });
-  const debouncedText = useDebounce(filters.search, 500);
+  const [filters, setFilter] = useState<{ search: string, page: number, count: number, loadMore: any, loadMorePage: number }>({ search: '', page: 1, count: 10, loadMore: true, loadMorePage: 1 });
+  const debouncedText = useDebounce(filters.search.trim(), 500);
 
   const { data: firstData, loading } = useQuery<UsersResponse>(GET_USERS, {
     variables: {
-      search: debouncedText.trim(),
-      page: filters.loadMorePage||1,
+      search: debouncedText,
+      page: filters.loadMorePage || 1,
       count: filters.count,
     }
   });
@@ -67,7 +67,7 @@ export default function Users() {
       });
     }
     setFormLoading(false)
-    setFilter(prev=>({ ...prev,search:'', page: 1, loadMorePage: 1,loadMore: true }));
+    setFilter(prev => ({ ...prev, search: '', page: 1, loadMorePage: 1, loadMore: true }));
     setFormModal("");
   };
 
@@ -116,21 +116,17 @@ export default function Users() {
   }
 
   useEffect(() => {
-    setFilter((prev: any) => ({ ...prev, page: 1, loadMorePage: 1,loadMore: true }));
-  }, [debouncedText.trim()]);
-
-  useEffect(() => {
-    if(!filters.loadMore) return
+    if (!filters.loadMore) return
     if (filters.page == 1) {
       setData(firstData?.users || []);
-    }else{
+    } else {
       setData((prev) => [...prev, ...(firstData?.users || [])]);
     }
 
-    if(firstData?.users?.length != filters.count && loading==false){
+    if (firstData?.users?.length != filters.count && loading == false) {
       setFilter((prev: any) => ({ ...prev, loadMore: null }));
     }
-    else if(firstData?.users?.length == filters.count && loading==false){
+    else if (firstData?.users?.length == filters.count && loading == false) {
       setFilter((prev) => ({ ...prev, page: prev.page + 1 }));
     }
   }, [firstData]);
@@ -156,7 +152,7 @@ export default function Users() {
               <input
                 type="text"
                 value={filters.search}
-                onChange={e => setFilter((prev: any) => ({ ...prev, search: e.target.value,page:1,loadMore:true,loadMorePage:1 }))}
+                onChange={e => setFilter((prev: any) => ({ ...prev, search: e.target.value, page: 1, loadMore: true, loadMorePage: 1 }))}
                 id="searchInput"
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
                 placeholder="Search by name, email, or role..."
@@ -269,9 +265,9 @@ export default function Users() {
             <button type="button" className="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
               onClick={() => setFormModal('')}
             >Cancel</button>
-            <button 
-            disabled={formLoading}
-            className="px-5 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            <button
+              disabled={formLoading}
+              className="px-5 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
             >{formLoading ? "Saving..." : "Save"}</button>
           </div>
         </form>}
