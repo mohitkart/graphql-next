@@ -13,9 +13,10 @@ export interface MkTableProps {
     total: number;
     count?: number;
     isLoading?: boolean;
+    loadMore?:()=>void;
 }
-export default function MKTable({ columns, data, total = 0, count = 50, isLoading = false }: MkTableProps) {
-    if (isLoading) return <>
+export default function MKTable({ columns, data, total = 0, count = 50, isLoading = false, loadMore }: MkTableProps) {
+    if (isLoading||(loadMore&&!total)) return <>
         <div className="animate-pulse bg-gray-300 h-[50px] mb-1"></div>
         <div className="animate-pulse bg-gray-300 h-[50px] mb-1"></div>
         <div className="animate-pulse bg-gray-300 h-[50px] mb-1"></div>
@@ -30,7 +31,7 @@ export default function MKTable({ columns, data, total = 0, count = 50, isLoadin
     
     return <>
     <div className="text-right mb-3">Total: {total}</div>
-        <div className="overflow-x-auto max-h-[500px]">
+        <div className="overflow-x-auto max-h-[500px]" id="tableContainer">
             <table className="w-full">
                 <thead className="bg-gray-50 sticky top-0">
                     <tr>
@@ -51,7 +52,10 @@ export default function MKTable({ columns, data, total = 0, count = 50, isLoadin
                     })}
                 </tbody>
             </table>
-            <InfiniteScroll load={()=>{}}>Loading</InfiniteScroll>
+            {loadMore?<InfiniteScroll load={loadMore||(()=>{})}>
+                <div className="animate-pulse bg-gray-300 h-[50px] mb-1"></div>
+            </InfiniteScroll>:<></>}
+            
         </div>
 
 

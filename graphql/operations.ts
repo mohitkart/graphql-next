@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client/core";
 
 export const GET_USERS = gql`
-  query User($search: String) {
-  users(search: $search) {
+query User($search: String, $page: Int, $count: Int) {
+  users(search: $search, page: $page, count: $count) {
     createdAt
     email
     id

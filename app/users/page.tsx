@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -28,14 +29,15 @@ type UsersResponse = {
 export default function Users() {
   const [editId, setEditId] = useState<string | null>(null);
   const [formModal, setFormModal] = useState<any>();
-  const [filters ,setFilter] = useState<{search:string,page:number,count:number}>({search:'jai',page:1,count:10});
+  const [data, setData] = useState<any[]>([]);
+  const [filters, setFilter] = useState<{ search: string, page: number, count: number, loadMore: any }>({ search: '', page: 1, count: 5, loadMore: 1 });
   const debouncedText = useDebounce(filters.search, 500);
 
-  const { data, loading ,refetch} = useQuery<UsersResponse>(GET_USERS, {
+  const { data: firstData, loading, fetchMore } = useQuery<UsersResponse>(GET_USERS, {
     variables: {
-      search: debouncedText,
-      page: filters.page,
-      count: filters.count
+      search: debouncedText.trim(),
+      page: filters.loadMore||1,
+      count: filters.count,
     }
   });
 
@@ -54,12 +56,12 @@ export default function Users() {
   const handleSubmit = async () => {
     if (editId) {
       await updateUser({
-        variables: { id: editId, name:formModal.name, email:formModal.email },
+        variables: { id: editId, name: formModal.name, email: formModal.email },
       });
       setEditId(null);
     } else {
       await createUser({
-        variables: { name:formModal.name,email:formModal.email },
+        variables: { name: formModal.name, email: formModal.email },
       });
     }
     setFormModal("");
@@ -110,8 +112,44 @@ export default function Users() {
   }
 
   useEffect(() => {
-      refetch({ search: debouncedText.trim()});
-    }, [debouncedText.trim()]);
+    setFilter((prev: any) => ({ ...prev, page: 1, loadMore: 1 }));
+  }, [debouncedText.trim()]);
+
+  useEffect(() => {
+    if (filters.page == 1) {
+      setData(firstData?.users || []);
+    }else{
+      // setData((prev) => [...prev, ...(firstData?.users || [])]);
+    }
+    if (firstData?.users?.length == filters.count&&filters.page==1) {
+      setFilter((prev: any) => ({ ...prev, page: 2 }));
+    }
+    if(firstData?.users?.length != filters.count && loading==false){
+      setFilter((prev: any) => ({ ...prev, loadMore: null }));
+    }
+  }, [firstData]);
+
+  useEffect(() => {
+    if (!(filters?.loadMore != null && filters.loadMore == filters.page && filters.page != 1)) return;
+    console.log('fetchMore filters', filters);
+    fetchMore({ variables: { search: debouncedText.trim(), page: filters.page, count: filters.count } }).then((res: any) => {
+      console.log('fetchMore', res);
+      if (res?.data?.users?.length) {
+        setData((prev) => [...prev, ...res.data.users]);
+      }
+      if (res?.data?.users?.length < filters.count) {
+        setFilter((prev) => ({ ...prev, loadMore: null }));
+      } else {
+        setFilter((prev) => ({ ...prev, page: prev.page + 1 }));
+      }
+    }).catch(err => {
+      console.error('fetchMore error', err);
+    });
+  }, [filters?.loadMore]);
+
+  const loadMore = () => {
+    setFilter((prev) => ({ ...prev, loadMore: prev.loadMore ? prev.page : null }));
+  }
 
   return (
     <div>
@@ -130,7 +168,7 @@ export default function Users() {
               <input
                 type="text"
                 value={filters.search}
-                onChange={e=>setFilter((prev:any)=>({...prev,search:e.target.value}))}
+                onChange={e => setFilter((prev: any) => ({ ...prev, search: e.target.value }))}
                 id="searchInput"
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
                 placeholder="Search by name, email, or role..."
@@ -173,10 +211,11 @@ export default function Users() {
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <MKTable
             columns={columns}
-            data={data?.users || []}
-            total={data?.users?.length || 0}
-            isLoading={loading}
+            data={data || []}
+            total={data?.length || 0}
+            // isLoading={loading}
             count={5}
+            loadMore={filters.loadMore ? loadMore : undefined}
           />
         </div>
 
@@ -223,8 +262,8 @@ export default function Users() {
         onResult={e => setFormModal('')}
         title={editId ? 'Edit User' : 'Add New User'}
         body={<form
-         onSubmit={e=>{e.preventDefault(); handleSubmit()}}
-        className="p-6 space-y-4">
+          onSubmit={e => { e.preventDefault(); handleSubmit() }}
+          className="p-6 space-y-4">
           <div>
             <label htmlFor="userName" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
             <input type="text" id="userName"

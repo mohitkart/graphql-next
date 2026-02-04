@@ -24,7 +24,7 @@ const typeDefs = `#graphql
   }
 
   type Query {
-    users(search: String): [User]
+    users(search: String,page:Int,count:Int): [User]
     user(id: ID!): User
     files: [File]
     file(id: ID!): File
@@ -56,17 +56,17 @@ let files = [
 
 const resolvers = {
   Query: {
-    users: async (_: any, { search }: any) => {
+    users: async (_: any, { search ,page=1,count=10}: any) => {
       await connectDB();
       if (!search) {
-        return User.find().sort({ createdAt: -1 });
+        return User.find().sort({ createdAt: -1 }).skip((page-1)*count).limit(count);
       }
       return User.find({
         $or: [
           { name: { $regex: search, $options: "i" } },
           { email: { $regex: search, $options: "i" } },
         ],
-      }).sort({ createdAt: -1 });
+      }).sort({ createdAt: -1 }).skip((page-1)*count).limit(count);;
     },
     user: async (_: any, { id }: any) => {
       await connectDB();

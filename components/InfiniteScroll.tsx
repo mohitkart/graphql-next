@@ -7,6 +7,9 @@ export default function InfiniteScroll({children,load}: {children: any,load: ()=
     const loadMore = () => {
         console.log("Load more items...");
         load()
+        // const scrollHeight=loaderRef.current?.parentElement?.scrollHeight || 0;
+        // const clientHeight=loaderRef.current?.parentElement?.clientHeight || 0;
+        // console.log("scrollHeight",scrollHeight,"clientHeight",clientHeight);
   };    
 
     useEffect(() => {
@@ -22,7 +25,6 @@ export default function InfiniteScroll({children,load}: {children: any,load: ()=
     if (loaderRef.current) {
       observer.observe(loaderRef.current);
     }
-
     return () => observer.disconnect();
   }, []);
 
