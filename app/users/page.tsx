@@ -30,6 +30,7 @@ export default function Users() {
   const [editId, setEditId] = useState<string | null>(null);
   const [formModal, setFormModal] = useState<any>();
   const [data, setData] = useState<any[]>([]);
+  const [formLoading, setFormLoading] = useState<any>(false);
   const [filters, setFilter] = useState<{ search: string, page: number, count: number, loadMore: any,loadMorePage:number }>({ search: '', page: 1, count: 5, loadMore: true,loadMorePage:1 });
   const debouncedText = useDebounce(filters.search, 500);
 
@@ -54,6 +55,7 @@ export default function Users() {
   });
 
   const handleSubmit = async () => {
+    setFormLoading(true)
     if (editId) {
       await updateUser({
         variables: { id: editId, name: formModal.name, email: formModal.email },
@@ -64,6 +66,8 @@ export default function Users() {
         variables: { name: formModal.name, email: formModal.email },
       });
     }
+    setFormLoading(false)
+    setFilter(prev=>({ ...prev,search:'', page: 1, loadMorePage: 1,loadMore: true }));
     setFormModal("");
   };
 
@@ -265,8 +269,10 @@ export default function Users() {
             <button type="button" className="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
               onClick={() => setFormModal('')}
             >Cancel</button>
-            <button className="px-5 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-            >Save</button>
+            <button 
+            disabled={formLoading}
+            className="px-5 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            >{formLoading ? "Saving..." : "Save"}</button>
           </div>
         </form>}
       /> : null}
