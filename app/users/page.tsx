@@ -152,7 +152,7 @@ export default function Users() {
               <input
                 type="text"
                 value={filters.search}
-                onChange={e => setFilter((prev: any) => ({ ...prev, search: e.target.value,page:1,loadMore:true}))}
+                onChange={e => setFilter((prev: any) => ({ ...prev, search: e.target.value,page:1,loadMore:true,loadMorePage:1 }))}
                 id="searchInput"
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
                 placeholder="Search by name, email, or role..."
