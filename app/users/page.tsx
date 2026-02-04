@@ -30,13 +30,13 @@ export default function Users() {
   const [editId, setEditId] = useState<string | null>(null);
   const [formModal, setFormModal] = useState<any>();
   const [data, setData] = useState<any[]>([]);
-  const [filters, setFilter] = useState<{ search: string, page: number, count: number, loadMore: any }>({ search: '', page: 1, count: 5, loadMore: 1 });
+  const [filters, setFilter] = useState<{ search: string, page: number, count: number, loadMore: any,loadMorePage:number }>({ search: '', page: 1, count: 5, loadMore: true,loadMorePage:1 });
   const debouncedText = useDebounce(filters.search, 500);
 
-  const { data: firstData, loading, fetchMore } = useQuery<UsersResponse>(GET_USERS, {
+  const { data: firstData, loading } = useQuery<UsersResponse>(GET_USERS, {
     variables: {
       search: debouncedText.trim(),
-      page: filters.loadMore||1,
+      page: filters.loadMorePage||1,
       count: filters.count,
     }
   });
@@ -112,43 +112,27 @@ export default function Users() {
   }
 
   useEffect(() => {
-    setFilter((prev: any) => ({ ...prev, page: 1, loadMore: 1 }));
+    setFilter((prev: any) => ({ ...prev, page: 1, loadMorePage: 1,loadMore: true }));
   }, [debouncedText.trim()]);
 
   useEffect(() => {
+    if(!filters.loadMore) return
     if (filters.page == 1) {
       setData(firstData?.users || []);
     }else{
-      // setData((prev) => [...prev, ...(firstData?.users || [])]);
+      setData((prev) => [...prev, ...(firstData?.users || [])]);
     }
-    if (firstData?.users?.length == filters.count&&filters.page==1) {
-      setFilter((prev: any) => ({ ...prev, page: 2 }));
-    }
+
     if(firstData?.users?.length != filters.count && loading==false){
       setFilter((prev: any) => ({ ...prev, loadMore: null }));
     }
+    else if(firstData?.users?.length == filters.count && loading==false){
+      setFilter((prev) => ({ ...prev, page: prev.page + 1 }));
+    }
   }, [firstData]);
 
-  useEffect(() => {
-    if (!(filters?.loadMore != null && filters.loadMore == filters.page && filters.page != 1)) return;
-    console.log('fetchMore filters', filters);
-    fetchMore({ variables: { search: debouncedText.trim(), page: filters.page, count: filters.count } }).then((res: any) => {
-      console.log('fetchMore', res);
-      if (res?.data?.users?.length) {
-        setData((prev) => [...prev, ...res.data.users]);
-      }
-      if (res?.data?.users?.length < filters.count) {
-        setFilter((prev) => ({ ...prev, loadMore: null }));
-      } else {
-        setFilter((prev) => ({ ...prev, page: prev.page + 1 }));
-      }
-    }).catch(err => {
-      console.error('fetchMore error', err);
-    });
-  }, [filters?.loadMore]);
-
   const loadMore = () => {
-    setFilter((prev) => ({ ...prev, loadMore: prev.loadMore ? prev.page : null }));
+    setFilter((prev) => ({ ...prev, loadMorePage: Number(prev.page) }));
   }
 
   return (
@@ -168,11 +152,10 @@ export default function Users() {
               <input
                 type="text"
                 value={filters.search}
-                onChange={e => setFilter((prev: any) => ({ ...prev, search: e.target.value }))}
+                onChange={e => setFilter((prev: any) => ({ ...prev, search: e.target.value,page:1,loadMore:true}))}
                 id="searchInput"
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
                 placeholder="Search by name, email, or role..."
-
               />
             </div>
 
@@ -211,7 +194,7 @@ export default function Users() {
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <MKTable
             columns={columns}
-            data={data || []}
+            data={(data || [])}
             total={data?.length || 0}
             // isLoading={loading}
             count={5}

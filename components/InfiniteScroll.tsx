@@ -5,11 +5,12 @@ export default function InfiniteScroll({children,load}: {children: any,load: ()=
     const loaderRef = useRef<HTMLDivElement>(null);
 
     const loadMore = () => {
-        console.log("Load more items...");
+        // console.log("Load more items...");
         load()
         // const scrollHeight=loaderRef.current?.parentElement?.scrollHeight || 0;
         // const clientHeight=loaderRef.current?.parentElement?.clientHeight || 0;
-        // console.log("scrollHeight",scrollHeight,"clientHeight",clientHeight);
+        // const scrollTop=loaderRef.current?.parentElement?.scrollTop || 0;
+        // console.log("scrollHeight",scrollHeight,"clientHeight",clientHeight,"scrollTop",scrollTop);
   };    
 
     useEffect(() => {
