@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client'
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import Header from "./Header";
 
 export default function RootLayout({
@@ -9,10 +9,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
 const [hydrated, setHydrated] = useState(false)
-
-useEffect(() => {
-
-}, [])
 
 useLayoutEffect(()=>{
   setHydrated(true)
