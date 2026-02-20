@@ -16,7 +16,7 @@ export interface MkTableProps {
     loadMore?:()=>void;
 }
 export default function MKTable({ columns, data, total = 0, count = 50, isLoading = false, loadMore }: MkTableProps) {
-    if (isLoading||(loadMore&&!total)) return <>
+    if ((isLoading&&!loadMore)||(loadMore&&!total)) return <>
         <div className="animate-pulse bg-gray-300 h-[50px] mb-1"></div>
         <div className="animate-pulse bg-gray-300 h-[50px] mb-1"></div>
         <div className="animate-pulse bg-gray-300 h-[50px] mb-1"></div>
