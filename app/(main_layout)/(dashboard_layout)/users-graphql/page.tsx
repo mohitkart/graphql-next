@@ -213,34 +213,6 @@ export default function Users() {
           </button>
         </div>
       </div>
-
-      {/* <h1>GraphQL CRUD</h1>
-
-      <input
-        placeholder="name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-
-      <input
-        placeholder="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-
-      <button onClick={handleSubmit} className="">
-        {editId ? "Update" : "Create"}
-      </button>
-
-      <hr className="my-4" />
-
-      <MKTable
-      columns={columns}
-      data={data?.users||[]}
-      total={data?.users?.length||0}
-      isLoading={loading}
-      count={5}
-      /> */}
       {formModal ? <Modal
         onResult={e => setFormModal('')}
         title={editId ? 'Edit User' : 'Add New User'}

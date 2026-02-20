@@ -31,7 +31,7 @@ export default function Content() {
     if (editId) {
       res = await putApi({ url: '/api/users', payload: { id: editId, name: formModal.name, email: formModal.email } })
     } else {
-      res = await postApi({ url: '/api/users', payload: { name: formModal.name, email: formModal.email } })
+      res = await postApi({ url: '/api/users', payload: { name: formModal.name, email: formModal.email ,password:formModal.password} })
     }
     setFormLoading(false)
     if (res.success) {
@@ -133,16 +133,12 @@ export default function Content() {
       if (apiRef.current) apiRef.current?.abort()
     }
   }, [])
-
-  const updateUser=()=>{
-    setUser({name:"Mohit Kumar"})
-  }
-
+  
   return (
     <div>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800" onClick={()=>updateUser()}>User Management</h1>
+          <h1 className="text-3xl font-bold text-gray-800">User Management</h1>
           <p className="text-gray-600 mt-2">Manage your user records with search, filter, and action options</p>
         </div>
         <div className="bg-white rounded-xl shadow-md p-6 mb-8">
@@ -237,6 +233,15 @@ export default function Content() {
               onChange={e => setFormModal((prev: any) => ({ ...prev, email: e.target.value }))}
               required className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent" />
           </div>
+          {!editId?<>
+          <div>
+            <label htmlFor="userName" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <input type="text"
+              value={formModal.password}
+              onChange={e => setFormModal((prev: any) => ({ ...prev, password: e.target.value }))}
+              required minLength={8} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent" />
+          </div>
+          </>:<></>}
           <div className="flex justify-end space-x-3">
             <button type="button" className="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
               onClick={() => setFormModal('')}

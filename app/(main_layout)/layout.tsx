@@ -1,9 +1,8 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client'
 import { useLayoutEffect, useState } from "react";
-import Header from "./Header";
 
-export default function RootLayout({
+export default function PageLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -17,9 +16,8 @@ useLayoutEffect(()=>{
 if(!hydrated) return <></>
 
   return (
-   <div>
-    <Header/>
+   <>
     {children}
-   </div>
+   </>
   );
 }
