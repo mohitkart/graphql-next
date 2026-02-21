@@ -9,6 +9,14 @@ const UserSchema = new mongoose.Schema(
       required: true,
       select: false, // 👈 Important for security
     },
+    addedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    }
   },
   { timestamps: true }
 );

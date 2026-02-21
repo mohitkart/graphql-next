@@ -41,9 +41,14 @@ export async function GET(req: NextRequest) {
           { name: { $regex: f.search, $options: "i" } },
           { email: { $regex: f.search, $options: "i" } },
         ],
-      }).sort({ createdAt: -1 }).skip((f.page - 1) * f.count).limit(f.count);
+      }).sort({ createdAt: -1 })
+      .skip((f.page - 1) * f.count).limit(f.count)
+      .populate("addedBy", "name email")
+      .populate("updatedBy", "name email")
     } else {
-      users = await User.find().sort({ createdAt: -1 }).skip((f.page - 1) * f.count).limit(f.count);
+      users = await User.find().sort({ createdAt: -1 }).skip((f.page - 1) * f.count).limit(f.count)
+      .populate("addedBy", "name email")
+      .populate("updatedBy", "name email")
     }
 
     return NextResponse.json({
@@ -62,6 +67,19 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const { name, email, password } = await req.json()
   try {
+    const token = (await cookies()).get('token')?.value || ''
+    if (!token) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const decoded: any = jwt.verify(
+      token,
+      process.env.JWT_SECRET!
+    );
+
     await connectDB();
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -72,9 +90,12 @@ export async function POST(req: NextRequest) {
       password: hashedPassword,
     });
 
+    delete user.password
+
     return NextResponse.json({
       success: true,
       data: user,
+      addedBy:decoded.id
     });
   }
   catch (err: any) {
@@ -96,10 +117,23 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  const token = (await cookies()).get('token')?.value || ''
+    if (!token) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const decoded: any = jwt.verify(
+      token,
+      process.env.JWT_SECRET!
+    );
+
   const { name, email, id } = await req.json()
   try {
     await connectDB();
-    const updatedUser = await User.findByIdAndUpdate(id, { name, email }, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(id, { name, email,updatedBy:decoded.id }, { new: true });
 
     return NextResponse.json({
       success: true,

@@ -12,7 +12,8 @@ const errHandle = (err: any) => {
     return {
         success: false,
         message: err.message,
-        status: err.status
+        status: err.status,
+        ...err.response.data,
     }
 }
 
