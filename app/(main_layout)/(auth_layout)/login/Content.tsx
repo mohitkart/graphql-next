@@ -1,4 +1,5 @@
 'use client'
+import toast from "@/components/Toast";
 import useZStore from "@/hooks/store";
 import { postApi } from "@/lib/apiClient";
 import Link from "next/link";
@@ -18,6 +19,8 @@ export default function Content() {
       if (res.success) {
         setUser(res.data)
         navigate.push('/users')
+      }else{
+        toast({message:res.message,variant:'error'})
       }
     })
   }
