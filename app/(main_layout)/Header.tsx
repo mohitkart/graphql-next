@@ -1,9 +1,13 @@
 'use client'
+import OptionDropdown from "@/components/OptionDropdown"
 import useZStore from "@/hooks/store"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export default function Header() {
-    const { user } = useZStore()
+    const { user,logout} = useZStore()
+    const router = useRouter()
+
     return <>
         <nav className="bg-neutral-primary sticky bg-white w-full z-20 top-0 start-0 border-b border-default">
             <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
@@ -21,7 +25,20 @@ export default function Header() {
                             <Link href="/users" className="block py-2 px-3 text-heading rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-fg-brand md:p-0 md:dark:hover:bg-transparent">Users</Link>
                         </li>
                         <li>
-                            {user ? <span>Welcome, {user.name}</span> : <Link href="/login" className="block py-2 px-3 text-heading rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-fg-brand md:p-0 md:dark:hover:bg-transparent">Login</Link>}
+                            {user ? <OptionDropdown
+                                onChange={e => {
+                                    if (e == 'logout') {
+                                        logout()
+                                    } else {
+                                        router.push(e)
+                                    }
+                                }}
+                                options={[
+                                    { name: 'Profile', id: '/profile' },
+                                    { name: 'Logout', id: 'logout' },
+                                ]}
+                                placeholder={`Welcome ${user?.name}`}
+                            /> : <Link href="/login" className="block py-2 px-3 text-heading rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-fg-brand md:p-0 md:dark:hover:bg-transparent">Login</Link>}
                         </li>
                     </ul>
                 </div>

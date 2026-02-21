@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
+import { postApi } from '@/lib/apiClient'
+import { useRouter } from 'next/navigation'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useShallow } from 'zustand/shallow'
@@ -20,12 +22,11 @@ export const useStore = create(
 
       setUser: (p: any) =>
         set({
-          user: {
+          user: p?{
             ...(get() as any).user,
             ...p,
-          },
+          }:null,
         }),
-
       setLoader: (p: boolean) =>
         set({
           loading: p,
@@ -33,7 +34,7 @@ export const useStore = create(
     }),
     {
       name: 'app-storage', // key in localStorage
-      partialize: (state:any) => ({
+      partialize: (state: any) => ({
         user: state.user, // persist only user
       }),
     }
@@ -42,5 +43,17 @@ export const useStore = create(
 
 export default function useZStore() {
   const store = useStore(useShallow(selector))
-  return store
+
+  const router = useRouter()
+  const logout = async () => {
+    const res=await postApi({ url: '/api/logout', payload: {} });
+    store.setUser(null)
+    router.refresh(); // 🔄 Clears server component cache
+    router.push("/login");
+    return res
+  }
+  return {
+    ...store, 
+    logout
+  }
 }
