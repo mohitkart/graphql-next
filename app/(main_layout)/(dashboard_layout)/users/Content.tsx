@@ -8,11 +8,9 @@ import { dateTimePipe } from "@/lib/shared";
 import Modal from "@/components/Modal";
 import { deleteApi, getApi, postApi, putApi } from "@/lib/apiClient";
 import DebounceInput from "@/components/DebounceInput";
-import useZStore from "@/hooks/store";
 import swal from "@/components/Swal";
 
 export default function Content() {
-  const { user, setUser } = useZStore()
   const [editId, setEditId] = useState<string | null>(null);
   const [formModal, setFormModal] = useState<any>();
   const [data, setData] = useState<any[]>([]);
@@ -51,7 +49,7 @@ export default function Content() {
   };
 
   const deleteUser = (id: string) => {
-    swal({ title: `Do you want to delete "${data?.find(itm=>itm._id)?.name}"`, showCancel: true,icon:'warning' }).then(res => {
+    swal({ title: `Do you want to delete "${data?.find(itm=>itm._id==id)?.name}"`, showCancel: true,icon:'warning' }).then(res => {
       if (res.isConfirmed) {
         deleteApi({ url: `api/users/${id}` }).then(res => {
           if (res.success) {
